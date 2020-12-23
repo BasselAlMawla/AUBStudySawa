@@ -49,7 +49,7 @@ exports.register = (req, res) => {
     var image_name = '';
     if(!req.files){
       //Do nothing
-      console.log("No image readed!");
+      console.log("No image read!");
     }
     else{
       console.log('req.files has been read!');
@@ -64,7 +64,7 @@ exports.register = (req, res) => {
               message: err
             });
           }else{
-            console.log("succeeded saving the image");
+            console.log("Image Saved Successfully");
           }
         });
       }
@@ -109,7 +109,7 @@ exports.addCourse = (req, res) => {
     }
     if(results.length > 0){ //if the course is already exists!
       return res.render('addCourse', {
-        message: 'That course is already in use'
+        message: 'That Course is already Registered'
       })
 
     }
@@ -120,7 +120,7 @@ exports.addCourse = (req, res) => {
         }else{
           console.log(`results course: ${resultss}`);
           return res.render('addCourse', {
-            message: 'Course registered!'
+            message: 'Course registered successfully!'
           });
         }
       });
@@ -177,7 +177,7 @@ exports.registerCourse = (req, res) => {
               console.log('Student has successfully registere : ', results[0]);
               //return res.status(201).redirect('/studentRegister');
               return res.render('studentRegister', {
-                message: 'Congrats! now your course is waiting the intructor approval.'
+                message: 'Your course is waiting for intructor approval.'
               });
             }
           });
@@ -232,7 +232,7 @@ exports.editRegistrar = (req, res) => {
       }
       if(!results){
         return res.render('editMyStudents', {
-          message: 'Student has not been deleted for anonymous reason!'
+          message: 'Student has not been deleted for unkwon reason!'
         });
       }
       else{
