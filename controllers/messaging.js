@@ -42,7 +42,7 @@ exports.sendPrivateMessage = (req, res) => {
 
 
 
-    //Saving the user image
+    //Saving the message file
     var file;
     var file_name = '';
     if(!req.files){
