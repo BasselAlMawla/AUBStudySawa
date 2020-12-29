@@ -82,6 +82,9 @@
 
 
 
+
+
+
       var sender = {
         name : '',
         email : '',
@@ -94,7 +97,8 @@
           name : '{{message.sender_name}}',
           email : '{{message.sender_email}}',
           subject : '{{message.subject}}',
-          body : '{{message.text}}'
+          body : '{{message.text}}',
+          media : '{{message.media}}'
         }
         senders.push(sender);
       {{/each}}
@@ -108,30 +112,35 @@
         var senderMessages = {
           name : '',
           subjects : [],
-          messages : []
+          messages : [],
+          medias : []
         };
         var subj = senders[i].subject;
         var msg = senders[i].body;
+        var mida = senders[i].media;
         if(i == 0){
           senderMessages.name = senders[i].name;
           senderMessages.subjects.push(subj);
           senderMessages.messages.push(msg);
+          senderMessages.medias.push(mida);
           uniqueSenders.push(senderMessages);
         }else{
           if(senders[i-1].name == senders[i].name){
             uniqueSenders[numberOfNewSenders].subjects.push(subj);
             uniqueSenders[numberOfNewSenders].messages.push(msg);
+            uniqueSenders[numberOfNewSenders].medias.push(mida);
           }else{
             numberOfNewSenders++;
             senderMessages.name = senders[i].name;
             senderMessages.subjects.push(subj);
             senderMessages.messages.push(msg);
+            senderMessages.medias.push(mida);
             uniqueSenders.push(senderMessages);
           }
         }
       }
 
-
+      console.log(uniqueSenders);
       const divTab = document.getElementById("list-tab");
       //<a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list" href="#list-profile" role="tab" aria-controls="profile">Profile</a>
       const divContent = document.getElementById("nav-tabContent");
@@ -155,8 +164,9 @@
         divoo.setAttribute('aria-labelledby', 'list-'+i+'-list');
 
         for(let j = 0 ; j < uniqueSenders[i].messages.length ; j++){
-          divoo.innerHTML += "<p class=\"d-flex align-items-center\"><strong>Subject : " + uniqueSenders[i].subjects[j] + "</strong> -- "+ uniqueSenders[i].messages[j] + "</p>";
-        }
+          divoo.innerHTML += "<p class=\"d-flex align-items-center\"><strong>Subject : " + uniqueSenders[i].subjects[j] + "</strong> - " + uniqueSenders[i].messages[j] + "<a href=\"../files/sent-files/{{user.email}}/"+uniqueSenders[i].medias[j]+"\" download>here</a></p>";
+
+      }
         divContent.appendChild(divoo);
       }
 
