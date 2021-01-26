@@ -2,7 +2,7 @@ const mysql = require( 'mysql');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { promisify } = require('util');
-
+const fs = require('fs');
 
 
 
@@ -92,26 +92,32 @@ exports.isLoggedIn = async (req, res, next) => {
               req.users = results;
               //If instructor
               if(result[0].isAdmin){
-                db.query('SELECT * FROM courses WHERE instructor_id = ?', [result[0].id], (errorss, resultss) => {
-                  if(!resultss){
-                    return next();
-                  }
-                  else{
-                    req.courses = resultss;
-                    return next();
-                  }
+                db.query('SELECT * FROM courses WHERE instructor_id = ? ORDER BY name', [result[0].id], (errorss, resultss) => {
+                  db.query('SELECT *, DATE_FORMAT(date,\'%d/%m (%h:%i)\') AS messageDate FROM users_messaging WHERE receiver_email = ?', [result[0].email], (errorsss, resultsss) => {
+                    if(errorss || errorsss){
+                      return next();
+                    }
+                    else{
+                      req.courses = resultss;
+                      req.privateMessages = resultsss;
+                      return next();
+                    }
+                  });
                 });
               }
               //If student
               else{
-                db.query('SELECT * FROM course_registrar WHERE student_id = ?', [result[0].id], (errorss, resultss) => {
-                  if(!resultss){
-                    return next();
-                  }
-                  else{
-                    req.registered = resultss;
-                    return next();
-                  }
+                db.query('SELECT * FROM course_registrar WHERE student_id = ? ORDER BY course_name', [result[0].id], (errorss, resultss) => {
+                  db.query('SELECT *, DATE_FORMAT(date,\'%d/%m (%h:%i)\') AS messageDate FROM users_messaging WHERE receiver_email = ?', [result[0].email], (errorsss, resultsss) => {
+                    if(!resultss){
+                      return next();
+                    }
+                    else{
+                      req.registered = resultss;
+                      req.privateMessages = resultsss;
+                      return next();
+                    }
+                  });
                 });
               }
             }
@@ -196,10 +202,6 @@ exports.authAdmin = async (req, res, next) => {
 
 
 
-
-
-
-
 exports.authStudent = async (req, res, next) => {
   //Step 1 is verify the token
   if( req.cookies.jwt ){ //grabbing the cookie who is named jwt
@@ -243,18 +245,45 @@ exports.authStudent = async (req, res, next) => {
   }
 }
 
-
-
-
-
-
 // This one for a user who is already registered in
 exports.getClass = async (req, res) => {
-  //console.log("class name: ", req.body);
-
-
-
   const { courseName } = req.body;
+
+  if(req.files) {
+    var file;
+    var file_name = '';
+    file = req.files.resource_file;
+    file_name = file.name;
+    console.log('File name = ', file_name);
+
+    var dir = 'public/files/course/' + courseName + '/';
+    console.log(dir);
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
+
+    file.mv(dir + file_name, (err) => {
+      if(err) {
+        return res.render('class', {
+          message: err
+        });
+      } else {
+        console.log("File sent as resource");
+      }
+    });
+
+    var date = new Date(Date.now());
+
+    db.query('INSERT INTO course_resource SET ?', {course_name: courseName, file_name: file_name, date: date}, (error, result) => {
+      if(error) {
+        console.log(error);
+      } else {
+        console.log("successfully uploaded file");
+      }
+    });
+  }
+
   //Step 1 is verify the token
   if( req.cookies.jwt ){ //grabbing the cookie who is named jwt
     try {
@@ -282,20 +311,31 @@ exports.getClass = async (req, res) => {
             }
             else{
               //req.class_name = courseName;
-              db.query('SELECT *, DATE_FORMAT(date,\'%d/%m (%h:%i)\') AS announceDate FROM announcement WHERE class_name = ?', [courseName], (error, resultss) => {
-                db.query('SELECT *, DATE_FORMAT(date,\'%d/%m (%h:%i)\') AS questionDate FROM question_post WHERE course_name = ?', [courseName], (error, resultsss) => {
-                  db.query('SELECT * FROM course_chat WHERE course_name = ?', [courseName], (error, resultssss) => {
-                    if(error){
-                      console.log(error);
-                    }
+              db.query('SELECT *, DATE_FORMAT(date,\'%d/%m (%h:%i)\') AS announceDate FROM announcement WHERE class_name = ?', [courseName], (error, result_announcements) => {
 
-                    return res.render('class', {
-                      user: result[0],
-                      class_name: courseName,
-                      announcements: resultss,
-                      questions: resultsss,
-                      chat: resultssss
-                    })
+                db.query('SELECT *, DATE_FORMAT(date,\'%d/%m (%h:%i)\') AS questionDate FROM question_post WHERE course_name = ?', [courseName], (error, result_questions) => {
+
+                  db.query('SELECT * FROM course_chat WHERE course_name = ?', [courseName], (error, result_chat) => {
+
+                    db.query('SELECT * FROM comment_post WHERE course_name = ? ORDER BY post_id ASC', [courseName], (error, result_comments) => {
+
+                      db.query('SELECT *, DATE_FORMAT(date,\'%d/%m (%h:%i)\') AS resource_date FROM course_resource WHERE course_name = ? ORDER BY id ASC', [courseName], (error, result_resources) => {
+
+                        if(error){
+                          console.log(error);
+                        }
+
+                        return res.render('class', {
+                          user: result[0],
+                          class_name: courseName,
+                          announcements: result_announcements,
+                          questions: result_questions,
+                          chat: result_chat,
+                          allComments: result_comments,
+                          resultResources: result_resources
+                        });
+                      });
+                    });
                   });
                 });
               });
