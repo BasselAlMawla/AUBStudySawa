@@ -137,4 +137,9 @@ router.get('/class', (req, res) => {
 })
 
 
+router.get('/question_post', (req, res) => {
+  res.render('question_post');
+})
+
+
 module.exports = router;
