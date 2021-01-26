@@ -1,10 +1,10 @@
 //var socket = io.connect();
 var muted = false;
-var videoOn = true;
 const videoGrid = document.getElementById("video-grid")
 const myPeer = new Peer(userId, {
   host: "/",
-  port: 9000
+  port: 9000,
+  path: "/peerjs"
 })
 const myVideo = document.createElement("video")
 // Mute own audio so the user doesn't hear himself
@@ -26,12 +26,7 @@ navigator.mediaDevices.getUserMedia({
 
   $("#toggleVideo").click(function(){
     //socket.emit("user-disconnected", userId);
-    if (videoOn)
-      $("video:first").hide();
-    else
-      $("video:first").show();
-      
-    videoOn = !videoOn;
+    video.hidden = !video.hidden;
   });
 
   $("#toggleMute").click(function(){

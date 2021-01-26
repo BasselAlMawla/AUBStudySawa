@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express(); // start the server
 const server = require("http").Server(app)
-server.listen(process.env.PORT || 3000, function () {
+server.listen(process.env.port || 3000, function () {
   console.log("Server started on port : 3000");
 })
 const io = require("socket.io")(server);
@@ -12,6 +12,7 @@ const bcrypt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
 var expressHbs = require("express-handlebars");
 const fileupload = require("express-fileupload");
+
 
 app.use(express.static("public"))
 

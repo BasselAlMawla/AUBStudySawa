@@ -135,7 +135,7 @@ socket.on("question message", (data) => {
 
 ///////////////////////////////////////////////////////////////////////////////// Displaying the announcements
 function displayQuestion(data) {
-  var temp = data.value;
+  var temp = "NOW " + "-" + data.value;
   const span = document.createElement("SPAN");
   span.style.fontSize = "12px";
   span.style.color = "grey";
@@ -148,6 +148,9 @@ function displayQuestion(data) {
   li.appendChild(textNode);
   li.appendChild(span);
   document.getElementById("question-ul").appendChild(li);
+
+
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////// Triggering comments
